@@ -42,20 +42,7 @@
         return str;
     }
 
-    static void PrintNow(const char* tag) {
-        SYSTEMTIME st;
-        GetLocalTime(&st);
-
-        /*
-        std::cout
-            << "[TIME] " << tag << " -> "
-            << st.wHour << ":"
-            << st.wMinute << ":"
-            << st.wSecond << "."
-            << st.wMilliseconds
-            << std::endl;
-            */
-    }
+  
     static size_t read_callback(void* ptr, size_t size, size_t nmemb, void* stream) {
         FILE* file = static_cast<FILE*>(stream);
         return fread(ptr, size, nmemb, file);
@@ -185,7 +172,7 @@
     }
 
     bool Convert() {
-        PrintNow("Convert.exe start");
+      
         STARTUPINFOA si{};
         PROCESS_INFORMATION pi{};
         si.cb = sizeof(si);
@@ -209,7 +196,6 @@
         CloseHandle(pi.hThread);
 
         generatedPdfPath = kTempPdf;
-        PrintNow("Convert.exe end");
         return true;
     }
     /*
@@ -357,6 +343,7 @@
             MessageBox(nullptr, L"Conversion from png to pdf failed", L"Error", MB_OK | MB_ICONERROR);
             return 1;
         }
+
         std::string response,_error;
         std::wstring store_id = ReadStringFromIniFile(L"C:\\BillBox\\common\\store_id.ini");
 
