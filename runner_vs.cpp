@@ -47,12 +47,21 @@
         FILE* file = static_cast<FILE*>(stream);
         return fread(ptr, size, nmemb, file);
     }
-
+    /*
     Prem_def UploadPDF(const std::wstring& filePathW,
         const std::wstring& mobileW,
         const std::wstring& newDirW,
         const std::wstring& filenameW,
         const std::string& format,
+        std::string& responseOut,
+        std::string errorOut)
+    */
+    Prem_def UploadPDF(const std::wstring& filePathW,
+        const std::wstring& mobileW,
+        const std::wstring& newDirW,
+        const std::wstring& filenameW,
+        const std::string& format,
+        const std::string& parser_name,
         std::string& responseOut,
         std::string errorOut)
     {
@@ -80,10 +89,12 @@
         std::string dirHeader = "x-new-dir: " + newDir;
         std::string filenameHeader = "x-filename: " + filename;
         std::string json = "x-format: " + format;
+        std::string parser_name_ = "x-parser-name:" + parser_name;
         headers = curl_slist_append(headers, mobileHeader.c_str());
         headers = curl_slist_append(headers, dirHeader.c_str());
         headers = curl_slist_append(headers, filenameHeader.c_str());
         headers = curl_slist_append(headers, json.c_str());
+        headers = curl_slist_append(headers, parser_name_.c_str());
 
         fseek(file, 0, SEEK_END);
         curl_off_t fsize = ftell(file);
@@ -91,7 +102,7 @@
 
         std::string response;
         curl_easy_setopt(curl, CURLOPT_URL, "https://api.billbox.co.in/upload-bill");
-     //   curl_easy_setopt(curl, CURLOPT_URL, "https://hxgmir9iw6.execute-api.ap-south-2.amazonaws.com/test/upload-bill");
+    //   curl_easy_setopt(curl, CURLOPT_URL, "https://hxgmir9iw6.execute-api.ap-south-2.amazonaws.com/test/upload-bill");
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_POST, 1L);
         curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
@@ -198,27 +209,6 @@
         generatedPdfPath = kTempPdf;
         return true;
     }
-    /*
-    void BackgroundConvert() {
-        PrintNow("BG: Start");
-        std::wstring error, out;
-
-        if (!ConvertDefaultPrnToPng(out, error)) {
-            conversionError = L"PRN → PNG conversion failed.";
-            conversionDone = true;
-            return;
-        }
-
-        if (!Convert()) {
-            conversionError = L"PNG → PDF conversion failed.";
-            conversionDone = true;
-            return;
-        }
-
-        conversionDone = true;
-        PrintNow("BG: End");
-    } */
-
     bool Print(std::wstring& error) {
         STARTUPINFOA si{};
         PROCESS_INFORMATION pi{};
@@ -243,8 +233,6 @@
         CloseHandle(pi.hThread);
         return true;
     }
-    #include <windows.h>
-
     void launch_detached(const wchar_t* exePath)
     {
         STARTUPINFO si{};
@@ -347,12 +335,16 @@
         std::string response,_error;
         std::wstring store_id = ReadStringFromIniFile(L"C:\\BillBox\\common\\store_id.ini");
 
+
+
+
         Prem_def curr_status = UploadPDF(
             L"C:\\BillBox\\Bills\\TEMP_CONVERTED.pdf",
             L"customer_no",
             store_id,
             L".pdf",
             "JSON",
+            "horizon",
             response,
             _error
         );
